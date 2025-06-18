@@ -6,7 +6,6 @@ export const blogZodSchema = z.object({
   title: z.string().min(1).max(100),
   content: z.string().min(1),
   image: z.string().optional(), 
-  author: z.string().uuid(),
   likes: z.number().min(0).optional(),
   comments: z.array(
     z.object({
