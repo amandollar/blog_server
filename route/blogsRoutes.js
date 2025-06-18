@@ -1,39 +1,22 @@
 import express from 'express';
-import { zodValidationMiddleware } from '../middleware/zodValidationMiddleware';
-import { blogSchema } from '../schemas/blogSchema';
-import { createBlog, getBlog, updateBlog, deleteBlog, getAllBlogs } from '../controllers/blogController';
+import { zodValidationMiddleware } from '../middleware/zodValidationMiddleware.js';
+import {blogZodSchema} from '../schemas/blogSchema.js';
+import {createBlog,getAllBlogs,getBlogById,updateBlog,deleteBlog,likeBlog,unlikeBlog,addComment,deleteComment ,getBlogsByUser  } from '../controller/Blog.js';
 import upload from '../middleware/multerMiddleware.js';
-import authMiddleware from '../middleware/authMiddleware.js';
-// Import necessary modules and middleware      
+import authMiddleware from '../middleware/authMiddleware.js';      
 
-const blogRoutes = express.Router();
-// Route to create a new blog post  
+const blogRouter = express.Router();
 
-blogRoutes.post(
-    '/create',
-    authMiddleware,
-    upload.single('image'),
-    zodValidationMiddleware(blogSchema.createBlogSchema),
-    createBlog
-);
 
-// Route to get a single blog post by ID
-blogRoutes.get('/:id', authMiddleware, getBlog);    
+blogRouter.post('/create',authMiddleware,upload.single('image'),zodValidationMiddleware(blogZodSchema),createBlog);
+blogRouter.get('/', getAllBlogs);
+blogRouter.get('/user/:userId', getBlogsByUser);
+blogRouter.get('/:id', getBlogById);
+blogRouter.put('/:id', authMiddleware, upload.single('image'), zodValidationMiddleware(blogZodSchema), updateBlog);
+blogRouter.delete('/:id', authMiddleware, deleteBlog);
+blogRouter.post('/:id/like', authMiddleware, likeBlog);
+blogRouter.post('/:id/unlike', authMiddleware, unlikeBlog);
+blogRouter.post('/:id/comment', authMiddleware, addComment);
+blogRouter.delete('/:id/comment/:commentId', authMiddleware, deleteComment);
 
-// Route to update a blog post by ID
-blogRoutes.put(
-    '/:id',
-    authMiddleware,
-    upload.single('image'),
-    zodValidationMiddleware(blogSchema.updateBlogSchema),
-    updateBlog
-);
-
-// Route to delete a blog post by ID
-blogRoutes.delete('/:id', authMiddleware, deleteBlog);  
-
-// Route to get all blog posts
-blogRoutes.get('/', authMiddleware, getAllBlogs);   
-
-// Export the blog routes
-export default blogRoutes;
+export default blogRouter;

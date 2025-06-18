@@ -13,7 +13,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "peerview_dev", 
+    folder: "dizzy_blog", 
     allowed_formats: ["jpg", "png", "jpeg","avif"]
   },
 });

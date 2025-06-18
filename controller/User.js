@@ -1,7 +1,7 @@
 import User from "../model/User.js";
 import bcrypt from "bcrypt";    
 import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../config.js";  
+ 
 
 //create user related controller functions  
 export const registerUser = async (req, res) => {
@@ -48,7 +48,7 @@ export const loginUser = async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '8h' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '8h' });
         res.status(200).json({ token, user: { id: user._id, username: user.username, email: user.email } });
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
@@ -76,12 +76,10 @@ export const deleteUser = async (req, res) => {
     try {
         const userId = req.user.id; 
 
-        // Find user by ID and delete
         const deletedUser = await User.findByIdAndDelete(userId);
         if (!deletedUser) {
             return res.status(404).json({ message: "User not found" });
         }
-
         res.status(200).json({ message: "User deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error });

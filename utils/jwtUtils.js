@@ -1,11 +1,13 @@
-import jwt from 'jsonwebtoken';  
-import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
 
-export const verifyToken = async (token) => {
+/**
+ * Verifies a JWT token and returns the decoded payload
+ * @param {string} token - The JWT token
+ * @returns {object} - Decoded token payload (e.g., { id, email })
+ */
+export const verifyToken = (token) => {
     try {
-        const decoded = jwt.verify(token, config.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-        return user;
+        return jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
         throw new Error("Invalid token");
     }

@@ -1,17 +1,19 @@
-import Blog  from "../model/Blog";
+import Blog from "../model/Blog.js";
 
-
-//write all the controller functions related to blog
+// Create a new blog
 export const createBlog = async (req, res) => {
+   
+    console.log("Creating blog with user:", req.user);
+    
     try {
-        const { title, content, image, tags } = req.body;
-        const author = req.user.id; // Assuming user ID is stored in req.user
-
+        const { title, content, tags } = req.body;
+        const imageFile = req.file;
         const newBlog = new Blog({
             title,
             content,
-            image,
-            author,
+            image: imageFile ? imageFile.path : "",
+            author: req.user.id,
+            likes: [],
             tags
         });
 
@@ -20,21 +22,28 @@ export const createBlog = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
-};  
+};
 
+// Get all blogs
 export const getAllBlogs = async (req, res) => {
     try {
-        const blogs = await Blog.find().populate("author", "username email").sort({ createdAt: -1 });
+        const blogs = await Blog.find()
+            .populate("author", "username email")
+            .sort({ createdAt: -1 })
+            .lean();
+
         res.status(200).json(blogs);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
 };
 
+// Get a single blog by ID
 export const getBlogById = async (req, res) => {
     try {
-        const blogId = req.params.id;
-        const blog = await Blog.findById(blogId).populate("author", "username email");
+        const blog = await Blog.findById(req.params.id)
+            .populate("author", "username email")
+            .lean();
 
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
@@ -46,20 +55,30 @@ export const getBlogById = async (req, res) => {
     }
 };
 
+// Update a blog
 export const updateBlog = async (req, res) => {
     try {
         const blogId = req.params.id;
-        const { title, content, image, tags } = req.body;
+        const { title, content, tags } = req.body;
+        const imageFile = req.file;
 
-        const updatedBlog = await Blog.findByIdAndUpdate(
-            blogId,
-            { title, content, image, tags },
-            { new: true }
-        ).populate("author", "username email");
-
-        if (!updatedBlog) {
+        const blog = await Blog.findById(blogId);
+        if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
+
+        if (blog.author.toString() !== req.user.id) {
+            return res.status(403).json({ message: "Not authorized to update this blog" });
+        }
+
+        blog.title = title;
+        blog.content = content;
+        blog.tags = tags;
+        blog.image = imageFile ? imageFile.path : blog.image;
+
+        await blog.save();
+
+        const updatedBlog = await Blog.findById(blogId).populate("author", "username email");
 
         res.status(200).json({ message: "Blog updated successfully", blog: updatedBlog });
     } catch (error) {
@@ -67,30 +86,35 @@ export const updateBlog = async (req, res) => {
     }
 };
 
+// Delete a blog
 export const deleteBlog = async (req, res) => {
     try {
-        const blogId = req.params.id;
-
-        const deletedBlog = await Blog.findByIdAndDelete(blogId);
-        if (!deletedBlog) {
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
-        }   
+        }
+
+        if (blog.author.toString() !== req.user.id) {
+            return res.status(403).json({ message: "Not authorized to delete this blog" });
+        }
+
+        await blog.remove();
+
         res.status(200).json({ message: "Blog deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
 };
+
+// Like a blog
 export const likeBlog = async (req, res) => {
     try {
-        const blogId = req.params.id;
-        const userId = req.user.id; // Assuming user ID is stored in req.user
-
-        const blog = await Blog.findById(blogId);
+        const blog = await Blog.findById(req.params.id);
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
 
-        // Check if the user has already liked the blog
+        const userId = req.user.id;
         if (blog.likes.includes(userId)) {
             return res.status(400).json({ message: "You have already liked this blog" });
         }
@@ -104,17 +128,15 @@ export const likeBlog = async (req, res) => {
     }
 };
 
+// Unlike a blog
 export const unlikeBlog = async (req, res) => {
     try {
-        const blogId = req.params.id;
-        const userId = req.user.id; // Assuming user ID is stored in req.user
-
-        const blog = await Blog.findById(blogId);
+        const blog = await Blog.findById(req.params.id);
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
 
-        // Check if the user has liked the blog
+        const userId = req.user.id;
         if (!blog.likes.includes(userId)) {
             return res.status(400).json({ message: "You have not liked this blog" });
         }
@@ -128,20 +150,17 @@ export const unlikeBlog = async (req, res) => {
     }
 };
 
+// Add a comment to a blog
 export const addComment = async (req, res) => {
     try {
-        const blogId = req.params.id;
-        const { content } = req.body;
-        const userId = req.user.id; // Assuming user ID is stored in req.user
-
-        const blog = await Blog.findById(blogId);
+        const blog = await Blog.findById(req.params.id);
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
 
         const comment = {
-            user: userId,
-            content,
+            user: req.user.id,
+            content: req.body.content,
             createdAt: new Date()
         };
 
@@ -154,21 +173,23 @@ export const addComment = async (req, res) => {
     }
 };
 
+// Delete a comment from a blog
 export const deleteComment = async (req, res) => {
     try {
-        const blogId = req.params.id;
-        const { commentId } = req.body; // Assuming comment ID is sent in the request body
-        const userId = req.user.id; // Assuming user ID is stored in req.user
-
-        const blog = await Blog.findById(blogId);
+        const blog = await Blog.findById(req.params.id);
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
 
-        // Find the comment to delete
-        const commentIndex = blog.comments.findIndex(comment => comment._id.toString() === commentId && comment.user.toString() === userId);
+        const commentId = req.params.commentId;
+        const userId = req.user.id;
+
+        const commentIndex = blog.comments.findIndex(
+            comment => comment._id.toString() === commentId && comment.user.toString() === userId
+        );
+
         if (commentIndex === -1) {
-            return res.status(404).json({ message: "Comment not found or you do not have permission to delete it" });
+            return res.status(404).json({ message: "Comment not found or not authorized" });
         }
 
         blog.comments.splice(commentIndex, 1);
@@ -180,18 +201,16 @@ export const deleteComment = async (req, res) => {
     }
 };
 
+// Get blogs by a specific user
 export const getBlogsByUser = async (req, res) => {
     try {
-        const userId = req.user.id; 
+        const userId = req.params.userId;
+        const blogs = await Blog.find({ author: userId })
+            .populate("author", "username email")
+            .sort({ createdAt: -1 });
 
-        const blogs = await Blog.find({ author: userId }).populate("author", "username email").sort({ createdAt: -1 });
         res.status(200).json(blogs);
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
 };
-
-
-
-
-
