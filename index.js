@@ -16,9 +16,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Correct CORS config for credentials
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: (origin, callback) => {
+    callback(null, origin); // allow all origins
+  },
   credentials: true
 }));
+
 
 // Routes
 app.use('/api/users', userRouter);  
