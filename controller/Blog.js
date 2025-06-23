@@ -87,8 +87,13 @@ export const updateBlog = async (req, res) => {
 };
 
 // Delete a blog
+// Delete a blog
 export const deleteBlog = async (req, res) => {
     try {
+        
+     
+
+
         const blog = await Blog.findById(req.params.id);
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
@@ -98,14 +103,13 @@ export const deleteBlog = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to delete this blog" });
         }
 
-        await blog.remove();
+        await Blog.findByIdAndDelete(req.params.id); // ✅ Replaced .remove()
 
         res.status(200).json({ message: "Blog deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-
 // Like a blog
 export const likeBlog = async (req, res) => {
     try {
