@@ -10,18 +10,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+
+const corsOptions = {
+  
+  origin: ['http://localhost:5173', 'https://your-production-frontend-url.com'], 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], 
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+};
+
+
+app.use(cors(corsOptions));
+
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Correct CORS config for credentials
-app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, origin); // allow all origins
-  },
-  credentials: true
-}));
-
 
 // Routes
 app.use('/api/users', userRouter);  
