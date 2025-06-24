@@ -109,6 +109,47 @@ export const getUserById = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
+
+
+
+
+
+
+
+// --- Profile update controller ---
+export const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { username } = req.body;
+        let updateData = {};
+
+      
+        if (username !== undefined) updateData.username = username;
+
+        
+        if (req.file) {
+            updateData.profileImage = req.file.path; 
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true }
+        ).select("-password");
+
+        res.json(updatedUser);
+    } catch (err) {
+        res.status(500).json({ error: "Failed to update profile" });
+    }
+};
+
+
+
+
+
+
+
+ 
 };
 
 
