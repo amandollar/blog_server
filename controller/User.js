@@ -109,6 +109,39 @@ export const getUserById = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
+
+
+ 
+
+const User = require('../models/User'); // Your User model
+
+// For image upload
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // Get user ID from JWT middleware
+    const { username } = req.body;
+    let updateData = {};
+
+    if (username) updateData.username = username;
+    if (req.file) {
+      // req.file.path or req.file.filename depending on your storage
+      updateData.profileImage = req.file.path; // or req.file.filename
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    ).select('-password'); // Don't return password
+
+    res.json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+};
+
+
+ 
 };
 
 
