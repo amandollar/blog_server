@@ -109,6 +109,7 @@ export const getUserById = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Server error", error });
     }
+};
 
 
 
@@ -123,10 +124,7 @@ export const updateProfile = async (req, res) => {
         const { username } = req.body;
         let updateData = {};
 
-      
         if (username !== undefined) updateData.username = username;
-
-        
         if (req.file) {
             updateData.profileImage = req.file.path; 
         }
@@ -141,15 +139,6 @@ export const updateProfile = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: "Failed to update profile" });
     }
-};
-
-
-
-
-
-
-
- 
 };
 
 
