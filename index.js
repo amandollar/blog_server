@@ -32,6 +32,7 @@ app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api/users', userRouter);  
 app.use('/api/blogs', blogRouter); 
+app.use('/user', userRouter);
 
 // Start server
 app.listen(PORT, () => {
