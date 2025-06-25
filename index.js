@@ -12,10 +12,13 @@ const PORT = process.env.PORT || 5000;
 
 
 const corsOptions = {
-
-  origin: ['http://localhost:5173', 'https://your-production-frontend-url.com'], 
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://your-production-frontend-url.com'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'], 
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 

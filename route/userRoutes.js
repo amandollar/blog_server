@@ -11,10 +11,8 @@ import {
   updateProfile 
 } from "../controller/User.js";
 import authMiddleware from "../middleware/authMiddleware.js";
-import multer from "multer";
+import upload from "../middleware/multerMiddleware.js";
 
-
-const upload = multer({ dest: "uploads/" }); 
 
 const userRouter = Router();
 
