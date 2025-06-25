@@ -28,7 +28,7 @@ export const createBlog = async (req, res) => {
 export const getAllBlogs = async (req, res) => {
     try {
         const blogs = await Blog.find()
-            .populate("author", "username email")
+            .populate("author", "username email profileImage")
             .sort({ createdAt: -1 })
             .lean();
 
@@ -42,7 +42,7 @@ export const getAllBlogs = async (req, res) => {
 export const getBlogById = async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id)
-            .populate("author", "username email")
+            .populate("author", "username email profileImage")
             .lean();
 
         if (!blog) {
@@ -210,7 +210,7 @@ export const getBlogsByUser = async (req, res) => {
     try {
         const userId = req.params.userId;
         const blogs = await Blog.find({ author: userId })
-            .populate("author", "username email")
+            .populate("author", "username email profileImage")
             .sort({ createdAt: -1 });
 
         res.status(200).json(blogs);
