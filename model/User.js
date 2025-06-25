@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  profileImage: {
+    type: String,
+    default: '',
+  },
   blogs: [
     {
       type: mongoose.Schema.Types.ObjectId,
