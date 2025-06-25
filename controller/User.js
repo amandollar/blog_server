@@ -131,7 +131,7 @@ export const updateProfile = async (req, res) => {
 
         if (username !== undefined) updateData.username = username;
         if (req.file) {
-            updateData.profileImage = req.file.path; 
+            updateData.profileImage = req.file.path; // This is the Cloudinary URL
         }
 
         const updatedUser = await User.findByIdAndUpdate(
